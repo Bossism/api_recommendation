@@ -64,9 +64,12 @@ class TextEncoder(nn.Module):
 
     # inputs list [batch, src_len]  have not been padding
     def forward(self, inputs):
-        inputs = ["".join(input).replace("\"", "").replace("(", "").replace(")", "").replace("{", "").replace("}", "")
-                  .replace(".", "").replace(",", "").replace(";", "") for input in inputs]  # .replace(" ", "")
-        new_inputs = self.tokenizer(inputs, return_tensors="pt", padding=True, truncation=True)  # batch_size list 'input_ids' 'attention_mask'
+        inputs_new = []
+        for input in inputs:
+            inputs_new.append(" ".join(args.token_vocab.get(str(token.item())) for token in input))
+        # inputs_new = ["".join(input).replace("\"", "").replace("(", "").replace(")", "").replace("{", "").replace("}", "")
+        #           .replace(".", "").replace(",", "").replace(";", "") for input in inputs_new]  # .replace(" ", "")
+        new_inputs = self.tokenizer(inputs_new, return_tensors="pt", padding=True, truncation=True)  # batch_size list 'input_ids' 'attention_mask'
         logits = self.bert(**new_inputs).logits  # [batch_size, token_num, d_model(50265)]
         mask_token_indexs = [torch.tensor((i == self.tokenizer.mask_token_id).nonzero(as_tuple=True)[0], dtype=torch.long)
                              for i in new_inputs.input_ids]  # [batch_size, mask_num] different in each sentence

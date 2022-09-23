@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch_geometric.data import Dataset, Data, HeteroData, DataLoader
 from utils import load_node_csv, SequenceEncoder, load_edge_csv, EdgeClassEncoder
+import torch.nn.functional as F
 
 
 class MyDataset(Dataset):
@@ -37,9 +38,10 @@ class MyDataset(Dataset):
         for home, dirs, files in os.walk(self.raw_file_names):
             for graphs_dir in dirs:
                 # 创建一个pt存储时的文件夹
-                graphs_idx += 1
-                graphs_path = os.path.join(self.processed_dir, f'graphs_{graphs_idx}')
-                os.mkdir(graphs_path)
+                if home == "code\\raw":
+                    graphs_idx += 1
+                    graphs_path = os.path.join(self.processed_dir, f'graphs_{graphs_idx}')
+                    os.mkdir(graphs_path)
                 for graphs_home, graphs_dir, graphs_files in os.walk(home + "\\" + graphs_dir):
                     for dir in graphs_dir:
                         graph_path = os.path.join(graphs_home, dir)
@@ -81,8 +83,8 @@ class MyDataset(Dataset):
                             else:
                                 text_file_path = s
                         f = open(text_file_path, encoding='utf-8')
-                        text = f.readlines()
-
+                        text_idx = "".join(f.readlines())
+                        text = torch.from_numpy(np.fromstring(text_idx, dtype=int, sep=' ')).unsqueeze(0)
                         data = HeteroData()
                         data['hole'].x = node_x[node_mapping[hole_index[0]]].unsqueeze(0)  # [1, 768]
                         data['node'].x = torch.cat((node_x[:node_mapping[hole_index[0]]], node_x[node_mapping[hole_index[0]] + 1:]), 0)  # [29, 768]
@@ -90,7 +92,7 @@ class MyDataset(Dataset):
                         gt_emb = torch.zeros(1, 602)
                         gt_emb[:, int(gt)] = 1
                         data.y = gt_emb
-                        data['code'] = text
+                        data['code'] = F.pad(text, [0, 512 - text.shape[1]])
                         # data['hole'].train_mask = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0])
                         # data['hole'].val_mask = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0])
                         # data['hole'].test_mask = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0])

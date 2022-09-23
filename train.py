@@ -27,9 +27,9 @@ val_size = int(len(dataset) * 0.1)
 test_size = len(dataset) - val_size - train_size
 train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, val_size, test_size])
 follow_batch_list = ['y', 'x', 'edge_index', 'edge_attr', 'code', 'node_type', 'edge_type']
-train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, follow_batch=follow_batch_list)
-val_loader = DataLoader(val_dataset, batch_size=4, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=4, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True, follow_batch=follow_batch_list)
+val_loader = DataLoader(val_dataset, batch_size=5, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=5, shuffle=True)
 
 model = CodeEncoder(out_dim=args.out_dim, in_channels=args.input_size, hidden_channels=args.hidden_size,
                     out_channels=args.out_size, num_relations=3, final_dim=args.vocab_size).to(args.device)

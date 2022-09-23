@@ -1,3 +1,5 @@
+import json
+
 from matplotlib import pyplot as plt
 from torch_geometric.data import download_url, extract_zip, DataLoader
 import torch
@@ -81,6 +83,13 @@ def load_edge_csv(path, src_index_col, src_mapping, dst_index_col, dst_mapping, 
     return edge_index, edge_attr, torch.tensor(src_hole), torch.tensor(des_hole)
 
 
+def load_tokens_vocab():
+    with open('tokens', 'r')as fp:   # encoding='utf8'
+        json_data = json.load(fp)
+        return json_data
+        # print('这是文件中的json数据：',json_data)
+
+
 class argparse():
     pass
 
@@ -92,8 +101,9 @@ args.hidden_size, args.input_size, args.out_size = [128, 768, 256]
 args.device, = [torch.device("cuda:0" if torch.cuda.is_available() else "cpu"), ]
 args.vocab_size = 602
 args.out_dim = 256
-args.batch_size = 4
+args.batch_size = 10
 args.data = 2000
+args.token_vocab = load_tokens_vocab()
 
 
 def map_k(output, target, top_k):
